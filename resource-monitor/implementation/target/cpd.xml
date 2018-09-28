@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+   <duplication lines="41" tokens="290">
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/DataBrokerBuilder.java"/>
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/NotificationServiceBuilder.java"/>
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[            AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker> casted =(AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>) base;
+            if (!casted.augmentations().isEmpty()) {
+                this.augmentation = new HashMap<>(casted.augmentations());
+            }
+        }
+    }
+
+    /**
+     *Set fields from given grouping argument. Valid argument is instance of one of following types:
+     * <ul>
+     * <li>org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef</li>
+     * </ul>
+     *
+     * @param arg grouping object
+     * @throws IllegalArgumentException if given argument is none of valid types
+    */
+    public void fieldsFrom(DataObject arg) {
+        boolean isValidArg = false;
+        if (arg instanceof org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef) {
+            this._type = ((org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef)arg).getType();
+            this._name = ((org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef)arg).getName();
+            isValidArg = true;
+        }
+        if (!isValidArg) {
+            throw new IllegalArgumentException(
+              "expected one of: [org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef] \n" +
+              "but was: " + arg
+            );
+        }
+    }
+
+    public java.lang.Object getName() {
+        return _name;
+    }
+    
+    public java.lang.Class<? extends org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceType> getType() {
+        return _type;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {]]></codefragment>
+   </duplication>
+   <duplication lines="36" tokens="194">
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/DataBrokerBuilder.java"/>
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/NotificationServiceBuilder.java"/>
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_name);
+            result = prime * result + Objects.hashCode(_type);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="20" tokens="142">
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/DataBrokerBuilder.java"/>
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/NotificationServiceBuilder.java"/>
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[                this.augmentation = Collections.<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>>singletonMap(e.getKey(), e.getValue());
+                break;
+            default :
+                this.augmentation = new HashMap<>(base.augmentation);
+            }
+        }
+
+        @Override
+        public java.lang.Object getName() {
+            return _name;
+        }
+        
+        @Override
+        public java.lang.Class<? extends org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceType> getType() {
+            return _type;
+        }
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemonitor.impl.rev161017.modules.module.configuration.resourcemonitor.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {]]></codefragment>
+   </duplication>
+   <duplication lines="33" tokens="129">
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/DataBrokerBuilder.java"/>
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/NotificationServiceBuilder.java"/>
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemonitor/impl/rev161017/modules/module/configuration/resourcemonitor/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[            java.lang.StringBuilder builder = new java.lang.StringBuilder ("DataBroker [");
+            boolean first = true;
+        
+            if (_name != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_name=");
+                builder.append(_name);
+             }
+            if (_type != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_type=");
+                builder.append(_type);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="16" tokens="127">
+      <file line="167"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/LatencyMonitor.java"/>
+      <file line="392"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitor.java"/>
+      <codefragment><![CDATA[    public static List<Link> getAllLinks() {
+        List<Link> linkList = new ArrayList<>();
+
+        try {
+            TopologyId topoId = new TopologyId("flow:1");
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent())
+                linkList = nodesOptional.get().getLink();
+
+            return linkList;
+        } catch (Exception e) {]]></codefragment>
+   </duplication>
+   <duplication lines="34" tokens="119">
+      <file line="110"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitor.java"/>
+      <file line="173"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitorProvider.java"/>
+      <codefragment><![CDATA[        return RpcResultBuilder.success(output.build()).buildFuture();
+
+    }
+
+
+    /**
+     * Recieve DataBroker from Path-Manager
+     * and return all nodes from Topology.
+     * Procedure is as follows:
+     * 1. Make a TopologyId with value flow:1
+     * 2. Build the Instance Identifier of the Topology
+     * 3. Read the transaction from the DataBroker
+     * 4. Get the CheckedFuture Of the topology from the Operational Store
+     * 5. Return the Nodes if found else empty list
+     *
+     * @param db - {@link DataBroker} DataBroker to extract data fromn md-sal
+     * @return List<Node> {@link List<Node>} - list of nodes found in the topoology
+     */
+    public static List<Node> getAllNodes(DataBroker db) {
+        List<Node> nodeList = new ArrayList<>();
+
+        try {
+            //Topology Id
+            TopologyId topoId = new TopologyId("flow:1");
+            //get the InstanceIdentifier
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+
+            //Read from operational database
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent()) {]]></codefragment>
+   </duplication>
+   <duplication lines="14" tokens="116">
+      <file line="235"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitor.java"/>
+      <file line="190"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <codefragment><![CDATA[                for (Link link : links) {
+                    String nodeToFind = link.getSource().getSourceNode().getValue();
+                    String outputNodeConnector = link.getSource().getSourceTp().getValue();
+
+                    for (org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node node : nodeList) {
+
+
+                        if (node.getId().getValue().equals(nodeToFind)) {
+
+                            List<NodeConnector> nodeConnectors = node.getNodeConnector();
+
+                            for (NodeConnector nc : nodeConnectors) {
+
+                                if (nc.getId().getValue().equals(outputNodeConnector)) {]]></codefragment>
+   </duplication>
+   <duplication lines="12" tokens="110">
+      <file line="177"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitorProvider.java"/>
+      <file line="295"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <codefragment><![CDATA[        List<Node> nodeList = new ArrayList<>();
+
+        try {
+            TopologyId topoId = new TopologyId("flow:1");
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent())
+                nodeList = nodesOptional.get().getNode();]]></codefragment>
+   </duplication>
+   <duplication lines="12" tokens="107">
+      <file line="177"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitorProvider.java"/>
+      <file line="265"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <codefragment><![CDATA[        List<Node> nodeList = new ArrayList<>();
+
+        try {
+            TopologyId topoId = new TopologyId("flow:1");
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent())
+                nodeList = nodesOptional.get().getNode();]]></codefragment>
+   </duplication>
+   <duplication lines="12" tokens="104">
+      <file line="265"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <file line="295"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <codefragment><![CDATA[        List<Node> nodeList = new ArrayList<Node>();
+
+        try {
+            TopologyId topoId = new TopologyId("flow:1");
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent())
+                nodeList = nodesOptional.get().getNode();]]></codefragment>
+   </duplication>
+   <duplication lines="15" tokens="102">
+      <file line="129"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/ResourceMonitor.java"/>
+      <file line="295"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-monitor/implementation/src/main/java/eu/virtuwind/resourcemonitor/impl/TopologyListener.java"/>
+      <codefragment><![CDATA[        List<Node> nodeList = new ArrayList<>();
+
+        try {
+            //Topology Id
+            TopologyId topoId = new TopologyId("flow:1");
+            //get the InstanceIdentifier
+            InstanceIdentifier<Topology> nodesIid = InstanceIdentifier.builder(NetworkTopology.class).child(Topology.class, new TopologyKey(topoId)).toInstance();
+            ReadOnlyTransaction nodesTransaction = db.newReadOnlyTransaction();
+
+            //Read from operational database
+            CheckedFuture<Optional<Topology>, ReadFailedException> nodesFuture = nodesTransaction
+                    .read(LogicalDatastoreType.OPERATIONAL, nodesIid);
+            Optional<Topology> nodesOptional = nodesFuture.checkedGet();
+
+            if (nodesOptional != null && nodesOptional.isPresent()) {]]></codefragment>
+   </duplication>
+</pmd-cpd>

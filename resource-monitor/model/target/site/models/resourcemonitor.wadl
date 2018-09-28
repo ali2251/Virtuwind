@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:topo="urn:TBD:params:xml:ns:yang:network-topology"
+ xmlns:resourcemonitor="urn:eu:virtuwind:resourcemonitor">
+
+	<grammars>
+		<include href="resourcemonitor.yang"/>
+		<include href="network-topology.yang"/>
+	</grammars>
+	
+	<resources base="http://localhost:9998/restconf">
+		<resource path="operations">
+			<resource path="resourcemonitor:get-stats">
+				<method name="POST">
+					<response>
+						<representation mediaType="application/xml" element="output"/>
+						<representation mediaType="text/xml" element="output"/>
+						<representation mediaType="application/json" element="output"/>
+						<representation mediaType="application/yang.data+xml" element="output"/>
+						<representation mediaType="application/yang.data+json" element="output"/>
+					</response>
+				</method>
+			</resource>
+			<resource path="resourcemonitor:get-number-of-packets">
+				<method name="POST">
+					<request>
+						<representation mediaType="application/xml" element="input"/>
+						<representation mediaType="text/xml" element="input"/>
+						<representation mediaType="application/json" element="input"/>
+						<representation mediaType="application/yang.data+xml" element="input"/>
+						<representation mediaType="application/yang.data+json" element="input"/>
+					</request>
+					<response>
+						<representation mediaType="application/xml" element="output"/>
+						<representation mediaType="text/xml" element="output"/>
+						<representation mediaType="application/json" element="output"/>
+						<representation mediaType="application/yang.data+xml" element="output"/>
+						<representation mediaType="application/yang.data+json" element="output"/>
+					</response>
+				</method>
+			</resource>
+		</resource>
+	</resources>
+</application>

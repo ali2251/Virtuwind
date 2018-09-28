@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+   <duplication lines="50" tokens="202">
+      <file line="543"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="512"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[                builder.append(_protocol);
+             }
+            if (_sourceIP != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_sourceIP=");
+                builder.append(_sourceIP);
+             }
+            if (_sourcePort != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_sourcePort=");
+                builder.append(_sourcePort);
+             }
+            if (_srcNode != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_srcNode=");
+                builder.append(_srcNode);
+             }
+            if (_srcNodePort != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_srcNodePort=");
+                builder.append(_srcNodePort);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="39" tokens="181">
+      <file line="167"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/MetersBuilder.java"/>
+      <file line="167"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/MetersBuilder.java"/>
+      <codefragment><![CDATA[                for (Map.Entry<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> e : augmentation.entrySet()) {
+                    if (!e.getValue().equals(other.getAugmentation(e.getKey()))) {
+                        return false;
+                    }
+                }
+                // .. and give the other one the chance to do the same
+                if (!obj.equals(this)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            java.lang.StringBuilder builder = new java.lang.StringBuilder ("Meters [");
+            boolean first = true;
+        
+            if (_meter != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_meter=");
+                builder.append(_meter);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="39" tokens="181">
+      <file line="167"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="167"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <codefragment><![CDATA[                for (Map.Entry<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> e : augmentation.entrySet()) {
+                    if (!e.getValue().equals(other.getAugmentation(e.getKey()))) {
+                        return false;
+                    }
+                }
+                // .. and give the other one the chance to do the same
+                if (!obj.equals(this)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            java.lang.StringBuilder builder = new java.lang.StringBuilder ("PhysicalPathLinks [");
+            boolean first = true;
+        
+            if (_link != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_link=");
+                builder.append(_link);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="35" tokens="176">
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/MetersBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/MetersBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_meter);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="35" tokens="176">
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_link);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="35" tokens="170">
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowOutputBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/ConfigureFastFailoverGroupsOutputBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowOutputBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsFlowOutputBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsPathOutputBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.BestEmbededFlowOutput>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_response);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.BestEmbededFlowOutput.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="35" tokens="170">
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/configure/fast/failover/groups/input/PathBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="118"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/embedmplspath/input/LinksBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_link);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="40" tokens="159">
+      <file line="461"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="439"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[            java.lang.StringBuilder builder = new java.lang.StringBuilder ("BestEmbededFlowInput [");
+            boolean first = true;
+        
+            if (_destNode != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_destNode=");
+                builder.append(_destNode);
+             }
+            if (_destNodePort != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_destNodePort=");
+                builder.append(_destNodePort);
+             }
+            if (_destPort != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_destPort=");
+                builder.append(_destPort);
+             }
+            if (_destinationIP != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_destinationIP=");
+                builder.append(_destinationIP);
+             }
+            if (_hardtimeout != null) {]]></codefragment>
+   </duplication>
+   <duplication lines="23" tokens="135">
+      <file line="349"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="331"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.BestEmbededFlowInput>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_destNode);
+            result = prime * result + Objects.hashCode(_destNodePort);
+            result = prime * result + Objects.hashCode(_destPort);
+            result = prime * result + Objects.hashCode(_destinationIP);
+            result = prime * result + Objects.hashCode(_hardtimeout);]]></codefragment>
+   </duplication>
+   <duplication lines="21" tokens="130">
+      <file line="375"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="356"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[            result = prime * result + Objects.hashCode(_protocol);
+            result = prime * result + Objects.hashCode(_sourceIP);
+            result = prime * result + Objects.hashCode(_sourcePort);
+            result = prime * result + Objects.hashCode(_srcNode);
+            result = prime * result + Objects.hashCode(_srcNodePort);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.BestEmbededFlowInput.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="32" tokens="126">
+      <file line="270"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsFlowInputBuilder.java"/>
+      <file line="240"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsPathInputBuilder.java"/>
+      <codefragment><![CDATA[                builder.append(_macToModify);
+             }
+            if (_mplsLabel != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_mplsLabel=");
+                builder.append(_mplsLabel);
+             }
+            if (_queueId != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_queueId=");
+                builder.append(_queueId);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="14" tokens="120">
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="255"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <codefragment><![CDATA[    public BestEmbededFlowInputBuilder(BestEmbededFlowInput base) {
+        this._destNode = base.getDestNode();
+        this._destNodePort = base.getDestNodePort();
+        this._destPort = base.getDestPort();
+        this._destinationIP = base.getDestinationIP();
+        this._hardtimeout = base.getHardtimeout();
+        this._idletimeout = base.getIdletimeout();
+        this._meters = base.getMeters();
+        this._physicalPathLinks = base.getPhysicalPathLinks();
+        this._protocol = base.getProtocol();
+        this._sourceIP = base.getSourceIP();
+        this._sourcePort = base.getSourcePort();
+        this._srcNode = base.getSrcNode();
+        this._srcNodePort = base.getSrcNodePort();]]></codefragment>
+   </duplication>
+   <duplication lines="30" tokens="118">
+      <file line="516"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="476"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[                builder.append(_idletimeout);
+             }
+            if (_meters != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_meters=");
+                builder.append(_meters);
+             }
+            if (_physicalPathLinks != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_physicalPathLinks=");
+                builder.append(_physicalPathLinks);
+             }
+            if (_protocol != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_protocol=");
+                builder.append(_protocol);
+             }
+            if (_sourceIP != null) {]]></codefragment>
+   </duplication>
+   <duplication lines="15" tokens="113">
+      <file line="22"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/MetersBuilder.java"/>
+      <file line="22"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/MetersBuilder.java"/>
+      <codefragment><![CDATA[    Map<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> augmentation = Collections.emptyMap();
+
+    public MetersBuilder() {
+    }
+
+    public MetersBuilder(Meters base) {
+        this._meter = base.getMeter();
+        if (base instanceof MetersImpl) {
+            MetersImpl impl = (MetersImpl) base;
+            if (!impl.augmentation.isEmpty()) {
+                this.augmentation = new HashMap<>(impl.augmentation);
+            }
+        } else if (base instanceof AugmentationHolder) {
+            @SuppressWarnings("unchecked")
+            AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters> casted =(AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>) base;]]></codefragment>
+   </duplication>
+   <duplication lines="15" tokens="113">
+      <file line="22"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="22"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <codefragment><![CDATA[    Map<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> augmentation = Collections.emptyMap();
+
+    public PhysicalPathLinksBuilder() {
+    }
+
+    public PhysicalPathLinksBuilder(PhysicalPathLinks base) {
+        this._link = base.getLink();
+        if (base instanceof PhysicalPathLinksImpl) {
+            PhysicalPathLinksImpl impl = (PhysicalPathLinksImpl) base;
+            if (!impl.augmentation.isEmpty()) {
+                this.augmentation = new HashMap<>(impl.augmentation);
+            }
+        } else if (base instanceof AugmentationHolder) {
+            @SuppressWarnings("unchecked")
+            AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks> casted =(AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>) base;]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="111">
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <file line="243"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[    public CreateAndSendFlowInputBuilder(CreateAndSendFlowInput base) {
+        this._destNode = base.getDestNode();
+        this._destNodePort = base.getDestNodePort();
+        this._destPort = base.getDestPort();
+        this._destinationIP = base.getDestinationIP();
+        this._meters = base.getMeters();
+        this._physicalPathLinks = base.getPhysicalPathLinks();
+        this._protocol = base.getProtocol();
+        this._queuesOnPath = base.getQueuesOnPath();
+        this._sourceIP = base.getSourceIP();
+        this._sourcePort = base.getSourcePort();
+        this._srcNode = base.getSrcNode();
+        this._srcNodePort = base.getSrcNodePort();]]></codefragment>
+   </duplication>
+   <duplication lines="19" tokens="106">
+      <file line="194"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsFlowInputBuilder.java"/>
+      <file line="176"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/EmbedMplsPathInputBuilder.java"/>
+      <codefragment><![CDATA[            result = prime * result + Objects.hashCode(_macToModify);
+            result = prime * result + Objects.hashCode(_mplsLabel);
+            result = prime * result + Objects.hashCode(_queueId);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.EmbedMplsFlowInput.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="105">
+      <file line="155"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/MetersBuilder.java"/>
+      <file line="155"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/MetersBuilder.java"/>
+      <codefragment><![CDATA[            org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters other = (org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters)obj;
+            if (!Objects.equals(_meter, other.getMeter())) {
+                return false;
+            }
+            if (getClass() == obj.getClass()) {
+                // Simple case: we are comparing against self
+                MetersImpl otherImpl = (MetersImpl) obj;
+                if (!Objects.equals(augmentation, otherImpl.augmentation)) {
+                    return false;
+                }
+            } else {
+                // Hard case: compare our augments with presence there...
+                for (Map.Entry<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> e : augmentation.entrySet()) {]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="105">
+      <file line="155"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="155"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <codefragment><![CDATA[            org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks other = (org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks)obj;
+            if (!Objects.equals(_link, other.getLink())) {
+                return false;
+            }
+            if (getClass() == obj.getClass()) {
+                // Simple case: we are comparing against self
+                PhysicalPathLinksImpl otherImpl = (PhysicalPathLinksImpl) obj;
+                if (!Objects.equals(augmentation, otherImpl.augmentation)) {
+                    return false;
+                }
+            } else {
+                // Hard case: compare our augments with presence there...
+                for (Map.Entry<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> e : augmentation.entrySet()) {]]></codefragment>
+   </duplication>
+   <duplication lines="14" tokens="102">
+      <file line="49"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/MetersBuilder.java"/>
+      <file line="49"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/MetersBuilder.java"/>
+      <codefragment><![CDATA[    public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> E getAugmentation(java.lang.Class<E> augmentationType) {
+        if (augmentationType == null) {
+            throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+        }
+        return (E) augmentation.get(augmentationType);
+    }
+
+     
+    public MetersBuilder setMeter(final java.lang.Integer value) {
+        this._meter = value;
+        return this;
+    }
+    
+    public MetersBuilder addAugmentation(java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters>> augmentationType, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.Meters> augmentation) {]]></codefragment>
+   </duplication>
+   <duplication lines="14" tokens="102">
+      <file line="49"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/best/embeded/flow/input/PhysicalPathLinksBuilder.java"/>
+      <file line="49"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/create/and/send/flow/input/PhysicalPathLinksBuilder.java"/>
+      <codefragment><![CDATA[    public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> E getAugmentation(java.lang.Class<E> augmentationType) {
+        if (augmentationType == null) {
+            throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+        }
+        return (E) augmentation.get(augmentationType);
+    }
+
+     
+    public PhysicalPathLinksBuilder setLink(final java.lang.String value) {
+        this._link = value;
+        return this;
+    }
+    
+    public PhysicalPathLinksBuilder addAugmentation(java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks>> augmentationType, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.rev161017.best.embeded.flow.input.PhysicalPathLinks> augmentation) {]]></codefragment>
+   </duplication>
+   <duplication lines="16" tokens="101">
+      <file line="423"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/BestEmbededFlowInputBuilder.java"/>
+      <file line="401"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/model/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/rev161017/CreateAndSendFlowInputBuilder.java"/>
+      <codefragment><![CDATA[            if (!Objects.equals(_protocol, other.getProtocol())) {
+                return false;
+            }
+            if (!Objects.equals(_sourceIP, other.getSourceIP())) {
+                return false;
+            }
+            if (!Objects.equals(_sourcePort, other.getSourcePort())) {
+                return false;
+            }
+            if (!Objects.equals(_srcNode, other.getSrcNode())) {
+                return false;
+            }
+            if (!Objects.equals(_srcNodePort, other.getSrcNodePort())) {
+                return false;
+            }
+            if (getClass() == obj.getClass()) {]]></codefragment>
+   </duplication>
+</pmd-cpd>

@@ -1,0 +1,2641 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+   <duplication lines="147" tokens="790">
+      <file line="1907"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2116"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            LOG.info("endpoint match recieved is {}", endpointMatch.toString());
+            LOG.info("hard timeout {} idle timeout {} ", hardtimeout, idletimeout);
+            LOG.info("meter is {}", meter);
+            LOG.info("source node is: {}  and port {} ", srcNode.getValue(), srcNodePort.getValue());
+
+            LOG.info("destination node is  {} and port is {}", destNode.getValue(), destNodePort.getValue());
+
+           // LOG.info("Source VLAN : " + srcVlan.getValue() );
+           // LOG.info("Dest VLAN: " + destVlan.getValue());
+
+            List<EmbeddingFlowRequest> listofFlowRequests = new ArrayList<>();
+
+            LOG.info("Physical path links on the path: " + physicalPathLinks.toString());
+
+/*
+            System.out.println(endpointMatch.toString() + " \n\n");
+
+	    System.out.println(physicalPathLinks.toString() + " \n\n");
+
+	    System.out.println("source is: " + srcNode.getValue() + " \n\n");
+	    System.out.println("dest is: " + destNode.getValue() + " \n\n");
+
+	    System.out.println("source is: " + srcNodePort.getValue() + " \n\n");
+	    System.out.println("dest is: " + destNodePort.getValue() + " \n\n");
+
+	*/
+
+
+            NodeConnectorId destNodeInPort = new NodeConnectorId(physicalPathLinks.get(physicalPathLinks.size() - 1).getDestination().getDestTp().getValue().split(":")[2]);
+
+            if (meter == null) {
+                Flow sourceFlowWithMeter = createSourceFlowWithoutQueues(srcNodePort, idletimeout, hardtimeout, endpointMatch, null, physicalPathLinks, srcVlan);
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(srcNode.getValue(), sourceFlowWithMeter);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(srcNode.getValue(), sourceFlowWithMeter.getCookie().getValue(), meter, burst, bandwidth));
+
+                Future<RpcResult<AddFlowOutput>> resultFuture = salFlowService.addFlow(flowinputSrcNode);
+
+                if (resultFuture.get().isSuccessful()) {
+                    LOG.info("Source Flow added successfully and cookie is: " + sourceFlowWithMeter.getCookie());
+
+                } else {
+
+                    LOG.error("Source Flow was not installed and error is " + resultFuture.get().getErrors().toString());
+
+                }
+
+
+            } else {
+
+
+
+                VTNMeterUtils vtnMeterUtils = new VTNMeterUtils(new MeterId(meter), bandwidth, burst);
+
+                AddMeterInput addMeterInput = vtnMeterUtils.createAddMeterInput(srcNode);
+
+
+                Future<RpcResult<AddMeterOutput>> future = salMeterService.addMeter(addMeterInput);
+
+                Flow sourceFlowWithMeter = null;
+
+                if (future.get().isSuccessful()) {
+                    LOG.info("Meter " + meter + " added successfully");
+                    LOG.info("Creating Source flow with meter now");
+                    sourceFlowWithMeter = createSourceFlowWithoutQueues(srcNodePort, idletimeout, hardtimeout, endpointMatch, meter, physicalPathLinks, srcVlan);
+                    LOG.info("source flow created on {} with port {} ", srcNode.getValue(), srcNodePort.getValue());
+
+                }
+
+
+                if (sourceFlowWithMeter == null) {
+                    LOG.info("Error!, Meter was not created");
+                    LOG.info("Error is: " + future.get().getErrors().toString());
+                } else {
+
+                    AddFlowInput flowinputSrcNode = getAddFlowInputToSend(srcNode.getValue(), sourceFlowWithMeter);
+
+                    listofFlowRequests.add(new EmbeddingFlowRequest(srcNode.getValue(), sourceFlowWithMeter.getCookie().getValue(), meter, burst, bandwidth));
+
+                    Future<RpcResult<AddFlowOutput>> resultFuture = salFlowService.addFlow(flowinputSrcNode);
+
+                    if (resultFuture.get().isSuccessful()) {
+                        LOG.info("Source Flow added successfully and cookie is: " + sourceFlowWithMeter.getCookie());
+
+                    } else {
+
+                        LOG.error("Source Flow was not installed and error is " + resultFuture.get().getErrors().toString());
+
+                    }
+
+
+                }
+
+            }
+
+            Flow destFlowWithoutMeter = createDestinationFlowWithoutQueues(destNodePort, idletimeout, hardtimeout, endpointMatch, destNodeInPort, destVlan);
+
+            LOG.info("source flow created on {} with port {} ", destNode.getValue(), destNodePort.getValue());
+
+
+            NodeConnectorId inPortForSecond = new NodeConnectorId(physicalPathLinks.get(0).getDestination().getDestTp().getValue().split(":")[2]);
+
+            //removing first link because already used
+            physicalPathLinks.remove(physicalPathLinks.get(0));
+
+            List<Flow> flows = createFlowsWithoutQueues(physicalPathLinks, idletimeout, hardtimeout, endpointMatch, inPortForSecond);
+
+
+            AddFlowInput flowinputDestNode = getAddFlowInputToSend(destNode.getValue(), destFlowWithoutMeter);
+
+            listofFlowRequests.add(new EmbeddingFlowRequest(destNode.getValue(), destFlowWithoutMeter.getCookie().getValue(), meter, burst, bandwidth));
+
+
+            salFlowService.addFlow(flowinputDestNode);
+
+            LOG.info("Destination Flow added");
+
+            //System.out.println("source and destination flows installed");
+
+
+            for (int i = 0; i < physicalPathLinks.size(); i++) {
+
+                // System.out.println("started for loop");
+
+
+                String edge_switch = physicalPathLinks.get(i)
+                        .getSource().getSourceNode().getValue();
+
+                LOG.info("Flow is now being installed on " + physicalPathLinks.get(i).getSource().getSourceTp().getValue());
+
+                Flow createdFlow = flows.get(i);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(edge_switch, createdFlow.getCookie().getValue(), meter, burst, bandwidth));
+
+
+                AddFlowInput flow = getAddFlowInputToSend(edge_switch, createdFlow);
+
+                // add flow to sal
+
+                salFlowService.addFlow(flow);
+
+            }
+
+
+            //  System.out.println("done");
+
+            IdToListMap.put(id, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="123" tokens="748">
+      <file line="244"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="424"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                               List<EmbeddingFlowRequest> listofFlowRequests = new ArrayList<>();
+
+
+                                               Flow first = null;
+                                               if (meterId == null) {
+
+                                                   first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, queues, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {
+
+
+
+                                                   VTNMeterUtils vtnMeterUtils = new VTNMeterUtils(new MeterId(meterId), bandwidth, burst);
+
+                                                   AddMeterInput addMeterInput = vtnMeterUtils.createAddMeterInput(srcNodeId);
+
+
+                                                   Future<RpcResult<AddMeterOutput>> future = salMeterService.addMeter(addMeterInput);
+
+
+
+                                                   if (future.get().isSuccessful()) {
+
+                                                       first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, meterId, links, queues, srcVlan);
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                       Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                       if (flowResult.get().isSuccessful()) {
+                                                           LOG.info("Flow successfully added");
+
+                                                       } else {
+
+                                                           LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                       }
+
+                                                   } else {
+
+                                                       LOG.error("Error with installing a meter: ----> " + future.get().getErrors());
+                                                   }
+
+                                               }
+
+                                               Flow last = createDestinationFlowWithQueuesWithoutMeter(dstNodePort, matchingStructure, destVlan);
+
+
+                                               listofFlowRequests.add(new EmbeddingFlowRequest(dstNodeId.getValue(), last.getCookie().getValue(), meterId, burst, bandwidth) );
+
+
+                                               AddFlowInput destFlow = getAddFlowInputToSend(dstNodeId.getValue(), last);
+                                               salFlowService.addFlow(destFlow);
+
+                                               NodeConnectorId inPortFirst = new NodeConnectorId(links.get(0).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+                                               NodeConnectorId inPortSecond = new NodeConnectorId(links.get(1).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+
+
+                                               links.get(0).remove(links.get(0).get(0));
+                                               links.get(1).remove(links.get(1).get(0));
+
+                                               queues.get(0).remove(queues.get(0).get(0));
+                                               queues.get(1).remove(queues.get(1).get(0));
+
+                                               for (int i = 0; i < links.size(); i++) {
+
+                                                   List<Link> listOfLinks = links.get(i);
+                                                   List<Long> queuesForLinkList = queues.get(i);
+
+                                                   List<Flow> flows = new ArrayList<>();
+
+                                                   if (i == 0) {
+                                                       flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortFirst);
+
+                                                   } else {
+                                                       flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortSecond);
+                                                   }
+
+
+                                                   for (int j = 0; j < flows.size(); j++) {
+
+
+                                                       Flow createdFlow = flows.get(j);
+
+
+                                                       // the first link should be ignored
+                                                       String nodeId = listOfLinks.get(j)
+                                                               .getSource().getSourceNode().getValue();
+
+                                                       //get the add input flow to add to sal
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                                                       LOG.info("Adding flows to salflow");
+
+                                                       // add flow to sal
+                                                       salFlowService.addFlow(flow);
+                                                       LOG.info("Flow successfully added");
+
+                                                   }
+
+                                               }
+
+
+                                               IdToListMap.put(finalId, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="118" tokens="732">
+      <file line="1285"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1470"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            LOG.info("endpoint match recieved is {}" + endpointMatch.toString());
+
+            LOG.info("meter is {}" + meterId);
+            LOG.info("source node is: {}  and port {} " + srcNode.getValue() + srcNodePort.getValue());
+
+            LOG.info("destination node is  {} and port is {}" + destNode.getValue() + destNodePort.getValue());
+
+            LOG.info("Physical path links on the path: " + physicalPathLinks);
+
+           // LOG.info("Source VLAN : " + srcVlan.getValue() );
+           // LOG.info("Dest VLAN: " + destVlan.getValue());
+
+            List<EmbeddingFlowRequest> listofFlowRequests = new ArrayList<>();
+
+            Flow sourceFlowWithMeter = null;
+
+            if (meterId == null) {
+                sourceFlowWithMeter = createSourceFlowWithQueuesWithMeter(srcNodePort, endpointMatch, null, physicalPathLinks, queuesOnPath, srcVlan);
+            } else {
+
+                VTNMeterUtils vtnMeterUtils = new VTNMeterUtils(new MeterId(meterId), bandwidth, burst);
+
+                AddMeterInput addMeterInput = vtnMeterUtils.createAddMeterInput(srcNode);
+
+
+                Future<RpcResult<AddMeterOutput>> future = salMeterService.addMeter(addMeterInput);
+
+
+                if (future.get().isSuccessful()) {
+                    LOG.info("Meter " + meterId + "added successfully");
+                    LOG.info("Creating Source flow with meter now");
+                    sourceFlowWithMeter = createSourceFlowWithQueuesWithMeter(srcNodePort, endpointMatch, meterId, physicalPathLinks, queuesOnPath, srcVlan);
+                    LOG.info("Source flow created on {} with port: {}" + srcNode.getValue() + srcNodePort.getValue());
+
+                } else {
+
+                    LOG.error("Error with installing a meter: ----> " + future.get().getErrors());
+                }
+
+            }
+
+            NodeConnectorId destNodeInPort = new NodeConnectorId(physicalPathLinks.get(physicalPathLinks.size() - 1).getDestination().getDestTp().getValue().split(":")[2]);
+
+
+            Flow destinationFlow = createDestinationFlowWithoutQueues(destNodePort, 0, 0, endpointMatch, destNodeInPort, destVlan); //createDestinationFlowWithQueuesWithoutMeter(destNodePort, endpointMatch);
+
+            LOG.info("Destination flow created on {} with port: {}" + destNode.getValue() + destNodePort.getValue());
+
+
+            NodeConnectorId inPortForSecond = new NodeConnectorId(physicalPathLinks.get(0).getDestination().getDestTp().getValue().split(":")[2]);
+
+
+            physicalPathLinks.remove(physicalPathLinks.get(0));
+            queuesOnPath.remove(queuesOnPath.get(0));
+
+            LOG.info("Link 1 and queue 1 removed and remaining sizes are: Queue List size {} , Links list Size {}" + queuesOnPath.size() + " " + physicalPathLinks.size());
+
+            System.out.println("Link 1 and queue 1 removed and remaining sizes are: Queue List size {} , Links list Size {}" + queuesOnPath.size() + physicalPathLinks.size());
+
+
+            List<Flow> flows = createFlows(endpointMatch, physicalPathLinks, queuesOnPath, inPortForSecond);
+
+
+            if (sourceFlowWithMeter != null) {
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(srcNode.getValue(), sourceFlowWithMeter.getCookie().getValue(), meterId, burst, bandwidth));
+                AddFlowInput srcFlow = getAddFlowInputToSend(srcNode.getValue(), sourceFlowWithMeter);
+                Future<RpcResult<AddFlowOutput>> resultFuture = salFlowService.addFlow(srcFlow);
+
+                if (resultFuture.get().isSuccessful()) {
+                    LOG.info("Source flow added successfully, The cookie is: " + srcFlow.getCookie());
+                } else {
+
+                    LOG.info("Source Flow was not added successfully");
+                    LOG.info("Error is: " + resultFuture.get().getErrors().toString());
+                }
+
+
+            } else {
+
+                LOG.info("Source flow is null, means meter installation was not successful");
+                System.out.println("Meter Installation was not successful, hence not installing first flow");
+
+            }
+
+
+            listofFlowRequests.add(new EmbeddingFlowRequest(destNode.getValue(), destinationFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+
+            AddFlowInput destFlow = getAddFlowInputToSend(destNode.getValue(), destinationFlow);
+            salFlowService.addFlow(destFlow);
+
+            LOG.info("Destination Flow added " + destFlow.toString());
+
+
+            for (int i = 0; i < physicalPathLinks.size(); i++) {
+
+
+                //the flow which was created
+                Flow createdFlow = flows.get(i);
+
+                String nodeId = physicalPathLinks.get(i)
+                        .getSource().getSourceNode().getValue();
+
+                //get the add input flow to add to sal
+
+                LOG.info("Flow is being installed on " + physicalPathLinks.get(0).getSource().getSourceTp().getValue());
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+
+                // add flow to sal
+                salFlowService.addFlow(flow);
+            }
+
+            IdToListMap.put(id, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="119" tokens="686">
+      <file line="607"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="783"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                               List<EmbeddingFlowRequest> listofFlowRequests = new ArrayList<>();
+
+
+                                               Flow first = null;
+
+                                               if (meterId == null) {
+
+                                                   first = createBestEffortSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {
+
+
+                                                   VTNMeterUtils vtnMeterUtils = new VTNMeterUtils(new MeterId(meterId), bandwidth, burst);
+
+                                                   AddMeterInput addMeterInput = vtnMeterUtils.createAddMeterInput(srcNodeId);
+
+
+                                                   Future<RpcResult<AddMeterOutput>> future = salMeterService.addMeter(addMeterInput);
+
+
+                                                   if (future.get().isSuccessful()) {
+
+                                                       first = createBestEffortSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, meterId, links, srcVlan);
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                       Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                       if (flowResult.get().isSuccessful()) {
+                                                           LOG.info("Flow successfully added");
+
+                                                       } else {
+
+                                                           LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                       }
+
+                                                   } else {
+
+                                                       LOG.error("Error with installing a meter: ----> " + future.get().getErrors());
+                                                   }
+
+                                               }
+
+                                               Flow last = createDestinationFlowWithQueuesWithoutMeter(dstNodePort, matchingStructure, destVlan);
+
+
+                                               listofFlowRequests.add(new EmbeddingFlowRequest(dstNodeId.getValue(), last.getCookie().getValue(), meterId, burst, bandwidth));
+
+
+                                               AddFlowInput destFlow = getAddFlowInputToSend(dstNodeId.getValue(), last);
+                                               salFlowService.addFlow(destFlow);
+
+                                               NodeConnectorId inPortFirst = new NodeConnectorId(links.get(0).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+                                               NodeConnectorId inPortSecond = new NodeConnectorId(links.get(1).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+
+
+                                               links.get(0).remove(links.get(0).get(0));
+                                               links.get(1).remove(links.get(1).get(0));
+
+
+                                               for (int i = 0; i < links.size(); i++) {
+
+                                                   List<Link> listOfLinks = links.get(i);
+
+                                                   List<Flow> flows = new ArrayList<>();
+
+                                                   if (i == 0) {
+                                                       flows = createFlowsWithoutQueues(matchingStructure, listOfLinks, inPortFirst);
+
+                                                   } else {
+                                                       flows = createFlowsWithoutQueues(matchingStructure, listOfLinks, inPortSecond);
+                                                   }
+
+
+                                                   for (int j = 0; j < flows.size(); j++) {
+
+
+                                                       Flow createdFlow = flows.get(j);
+
+
+                                                       // the first link should be ignored
+                                                       String nodeId = listOfLinks.get(j)
+                                                               .getSource().getSourceNode().getValue();
+
+                                                       //get the add input flow to add to sal
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                                                       LOG.info("Adding flows to salflow");
+
+                                                       // add flow to sal
+                                                       salFlowService.addFlow(flow);
+                                                       LOG.info("Flow successfully added");
+
+                                                   }
+
+                                               }
+
+
+                                               IdToListMap.put(finalId, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="59" tokens="306">
+      <file line="916"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1097"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                                       Long meterId, List<List<Link>> links, List<List<Long>> queues, VlanId srcVlan) {
+        FlowBuilder flowBuilder = new FlowBuilder()
+                .setTableId((short) 0)
+                .setFlowName("random");
+
+        int pp = 0;
+
+
+        //Flow ID
+        flowBuilder.setId(new FlowId(Long.toString(flowBuilder.hashCode())));
+
+        MatchBuilder matchBuilder = new MatchBuilder();
+
+        matchBuilder.setEthernetMatch(match1.getEthernetMatch())
+                .setLayer3Match(match1.getLayer3Match())
+                .setInPort(srcNodeConnectorId);
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        Match match = matchBuilder
+                .build();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+
+        //Actions
+        //currently changing tos and sending to output connector
+
+
+        List<List<Action>> listofactions = new ArrayList<>();
+
+        listofactions.add(new ArrayList<Action>());
+
+
+        String firstElemOfFirstList = links.get(0).get(0).getSource().getSourceTp().getValue().split(":")[2];
+
+        String firstElemOfSecondList = links.get(1).get(0).getSource().getSourceTp().getValue().split(":")[2];
+
+
+        if (srcVlan != null) {
+
+            PopVlanActionCaseBuilder popVlanBuilder = new PopVlanActionCaseBuilder();
+            popVlanBuilder.setPopVlanAction(new PopVlanActionBuilder().build());
+
+            Action vlanAction = actionBuilder.setOrder(0).setAction(popVlanBuilder.build()).build();
+
+            Action outputNodeConnectorActionsrcFirstList = actionBuilder
+                    .setOrder(2).setAction(new OutputActionCaseBuilder()]]></codefragment>
+   </duplication>
+   <duplication lines="38" tokens="303">
+      <file line="282"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="461"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="644"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="819"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                       first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, meterId, links, queues, srcVlan);
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                       Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                       if (flowResult.get().isSuccessful()) {
+                                                           LOG.info("Flow successfully added");
+
+                                                       } else {
+
+                                                           LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                       }
+
+                                                   } else {
+
+                                                       LOG.error("Error with installing a meter: ----> " + future.get().getErrors());
+                                                   }
+
+                                               }
+
+                                               Flow last = createDestinationFlowWithQueuesWithoutMeter(dstNodePort, matchingStructure, destVlan);
+
+
+                                               listofFlowRequests.add(new EmbeddingFlowRequest(dstNodeId.getValue(), last.getCookie().getValue(), meterId, burst, bandwidth) );
+
+
+                                               AddFlowInput destFlow = getAddFlowInputToSend(dstNodeId.getValue(), last);
+                                               salFlowService.addFlow(destFlow);
+
+                                               NodeConnectorId inPortFirst = new NodeConnectorId(links.get(0).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+                                               NodeConnectorId inPortSecond = new NodeConnectorId(links.get(1).get(0).getDestination().getDestTp().getValue().split(":")[2]);
+
+
+                                               links.get(0).remove(links.get(0).get(0));
+                                               links.get(1).remove(links.get(1).get(0));]]></codefragment>
+   </duplication>
+   <duplication lines="41" tokens="290">
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/DataBrokerBuilder.java"/>
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/NotificationServiceBuilder.java"/>
+      <file line="42"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[            AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker> casted =(AugmentationHolder<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>) base;
+            if (!casted.augmentations().isEmpty()) {
+                this.augmentation = new HashMap<>(casted.augmentations());
+            }
+        }
+    }
+
+    /**
+     *Set fields from given grouping argument. Valid argument is instance of one of following types:
+     * <ul>
+     * <li>org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef</li>
+     * </ul>
+     *
+     * @param arg grouping object
+     * @throws IllegalArgumentException if given argument is none of valid types
+    */
+    public void fieldsFrom(DataObject arg) {
+        boolean isValidArg = false;
+        if (arg instanceof org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef) {
+            this._type = ((org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef)arg).getType();
+            this._name = ((org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef)arg).getName();
+            isValidArg = true;
+        }
+        if (!isValidArg) {
+            throw new IllegalArgumentException(
+              "expected one of: [org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceRef] \n" +
+              "but was: " + arg
+            );
+        }
+    }
+
+    public java.lang.Object getName() {
+        return _name;
+    }
+    
+    public java.lang.Class<? extends org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceType> getType() {
+        return _type;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {]]></codefragment>
+   </duplication>
+   <duplication lines="54" tokens="280">
+      <file line="1657"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1777"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                          List<Link> physicalPathLinks, List<Long> queuesOnPath, NodeConnectorId inPort
+    ) {
+        FlowBuilder flowBuilder = new FlowBuilder()
+                .setTableId((short) 0)
+                .setFlowName("random");
+
+        //Flow ID
+        flowBuilder.setId(new FlowId(Long.toString(flowBuilder.hashCode())));
+
+        // TcpMatchBuilder tcpMatchBuilder = new TcpMatchBuilder().setTcpSourcePort(new PortNumber(sourcePort)).setTcpDestinationPort(new PortNumber(destPort));
+        //IpMatchBuilder ipMatchBuilder = new IpMatchBuilder().setIpProtocol(protocol);
+
+        MatchBuilder matchBuilder = new MatchBuilder();
+
+        matchBuilder.setEthernetMatch(match1.getEthernetMatch())
+                .setLayer3Match(match1.getLayer3Match());
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        ArrayList<Match> matches = new ArrayList<>();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+
+
+        List<List<Action>> listofactions = new ArrayList<>();
+
+        for (int j = 0; j < physicalPathLinks.size(); ++j) {
+            listofactions.add(new ArrayList<Action>());
+        }
+        for (int i = 0; i < physicalPathLinks.size(); i++) {
+
+            NodeConnectorId inPortLocal = null;
+
+            if (i == 0) {
+                inPortLocal = inPort;
+            } else {
+                inPortLocal = new NodeConnectorId(physicalPathLinks.get(i - 1).getDestination().getDestTp().getValue().split(":")[2]);
+            }
+
+            matchBuilder.setInPort(inPortLocal);
+
+            matches.add(matchBuilder.build());]]></codefragment>
+   </duplication>
+   <duplication lines="47" tokens="261">
+      <file line="759"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="809"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, false, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);
+
+                AddFlowInput flowinputDestNode = getAddFlowInputToSend(last, destinationFlow);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(last, destinationFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> futureEgreeFlow = salFlowService.addFlow(flowinputDestNode);
+
+                if (futureEgreeFlow.isDone() && futureEgreeFlow.get().isSuccessful()) {
+                    LOG.info("Flow installation Successful: Eggress flow: " + last);
+                } else {
+
+                    if (futureEgreeFlow.get().getErrors().size() > 0) {
+                        LOG.error("Flow Installation unsuccessful: Egress error is: " + futureEgreeFlow.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+            } else if (!isFinalDomain && !isFinalDomain) {]]></codefragment>
+   </duplication>
+   <duplication lines="44" tokens="258">
+      <file line="856"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="901"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, true, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, false, egressRouteVlanId, destMac);
+
+                AddFlowInput flowinputDestNode = getAddFlowInputToSend(last, destinationFlow);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(last, destinationFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> futureEgreeFlow = salFlowService.addFlow(flowinputDestNode);
+
+                if (futureEgreeFlow.isDone() && futureEgreeFlow.get().isSuccessful()) {
+                    LOG.info("Flow installation Successful: Eggress flow: " + last);
+                } else {
+                    if (futureEgreeFlow.get().getErrors().size() > 0) {
+                        LOG.error("Flow Installation unsuccessful: Egress error is: " + futureEgreeFlow.get().getErrors().toString());
+                        return -1L;
+                    }
+                }
+
+            } else if (isFinalDomain && isFirstDomain) {]]></codefragment>
+   </duplication>
+   <duplication lines="46" tokens="257">
+      <file line="137"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="3102"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[        listOfEmbeddingId = ResourceManagerRegistryImpl.getInstance().readAllResourceManagerDatastore();
+
+        if(listOfEmbeddingId != null) {
+            Long presentId = 0L;
+            Long pastId = 0L;
+
+            List<EmbeddingFlowRequest> allRequests = new ArrayList<>();
+
+
+            for(int i = 0; i<listOfEmbeddingId.size(); ++i ) {
+
+                //EmbeddingIdCookie
+
+                if(i == 0) {
+                    pastId = listOfEmbeddingId.get(i).getEmbeddingId();
+                } else {
+                    pastId = listOfEmbeddingId.get(i-1).getEmbeddingId();
+                }
+
+                presentId = listOfEmbeddingId.get(i).getEmbeddingId();
+                Long cookie = listOfEmbeddingId.get(i).getFlowCookie();
+                String switchId = listOfEmbeddingId.get(i).getFlowSwitchId();
+                Long meterId = listOfEmbeddingId.get(i).getMeterId();
+                Long burst = listOfEmbeddingId.get(i).getMeterBurst();
+                Long bandwidth = listOfEmbeddingId.get(i).getMeterBandwidth();
+
+                allRequests.add(new EmbeddingFlowRequest(switchId, BigInteger.valueOf(cookie), meterId, burst, bandwidth));
+
+                if(!presentId.equals(pastId) && i != listOfEmbeddingId.size()-1 ) {
+                    //finished one id, reset
+                    IdToListMap.put(pastId, allRequests);
+                    allRequests.clear();
+                } else if(i == listOfEmbeddingId.size()-1) {
+                    //last element, must be added to the list
+                    IdToListMap.put(presentId, allRequests);
+                    allRequests.clear();
+                }
+
+
+
+
+
+            }
+
+
+        }]]></codefragment>
+   </duplication>
+   <duplication lines="58" tokens="244">
+      <file line="1035"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1199"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            listofactions.get(0).add(queueAction);
+
+            //ApplyActions
+        }
+
+        LOG.info("applying action");
+        ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(0)).build();
+
+        //Instruction
+        Instruction applyActionsInstruction = new InstructionBuilder() //
+                .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                        .setApplyActions(applyActions) //
+                        .build())
+
+                .build();
+
+        List<Instruction> instructionList = new ArrayList<>();
+
+        if (meterId == null) {
+
+            instructionList.add(applyActionsInstruction);
+
+
+        } else {
+
+            Instruction meterInstruction = new InstructionBuilder()
+                    .setOrder(1).setInstruction((new MeterCaseBuilder()
+                            .setMeter(new MeterBuilder()
+                                    .setMeterId(new MeterId(meterId))
+                                    .build())
+                            .build()))
+                    .build();
+
+
+            instructionList.add(applyActionsInstruction);
+            instructionList.add(meterInstruction);
+
+        }
+
+
+        Instructions applyInstructions = new InstructionsBuilder()
+                .setInstruction(instructionList)
+                .build();
+
+
+        // Put our Instruction in a list of Instructions
+
+        LOG.info("adding flow");
+        Flow flow = flowBuilder
+                .setMatch(match)
+                .setBufferId(OFConstants.OFP_NO_BUFFER)
+                .setInstructions(applyInstructions)
+                .setPriority(1000)
+                .setCookie(new FlowCookie(BigInteger.valueOf(flowCookieInc.getAndIncrement())))
+                .setFlags(new FlowModFlags(false, false, false, false, false)).build();
+
+        return flow;
+    }]]></codefragment>
+   </duplication>
+   <duplication lines="46" tokens="233">
+      <file line="462"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1717"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                    .setQueueId(queue)
+                                    .build())
+                            .build())
+
+                    .build();
+
+            String outputNodeConnector = physicalPathLinks.get(i).getSource().getSourceTp().getValue().split(":")[2];
+            LOG.info("setting OutputNodeConnector = " + outputNodeConnector);
+
+            Action outputNodeConnectorAction = actionBuilder
+                    .setOrder(1).setAction(new OutputActionCaseBuilder()
+                            .setOutputAction(new OutputActionBuilder()
+                                    .setOutputNodeConnector(new Uri(outputNodeConnector))
+                                    .build())
+                            .build())
+                    .build();
+
+
+            listofactions.get(i).add(queueAction);
+            listofactions.get(i).add(outputNodeConnectorAction);
+
+        }
+
+
+        //ApplyActions
+
+        List<Flow> flows = new ArrayList<>();
+        for (int i = 0; i < listofactions.size(); i++) {
+
+            ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(i)).build();
+
+            //Instruction
+            Instruction applyActionsInstruction = new InstructionBuilder() //
+                    .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                            .setApplyActions(applyActions) //
+                            .build())
+
+                    .build();
+
+            Instructions applyInstructions = new InstructionsBuilder()
+                    .setInstruction(ImmutableList.of(applyActionsInstruction))
+                    .build();
+
+
+            flows.add(flowBuilder
+                    .setMatch(match)]]></codefragment>
+   </duplication>
+   <duplication lines="56" tokens="216">
+      <file line="2542"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2857"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                    .build();
+
+
+            listofactions.get(0).add(outputNodeConnectorActionsrc);
+
+        }
+        //ApplyActions
+
+
+        LOG.info("applying action");
+        ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(0)).build();
+
+        //Instruction
+        Instruction applyActionsInstruction = new InstructionBuilder() //
+                .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                        .setApplyActions(applyActions) //
+                        .build())
+
+                .build();
+
+        List<Instruction> instructionList = new ArrayList<>();
+
+        if (meterId == null) {
+
+            instructionList.add(applyActionsInstruction);
+
+        } else {
+
+            Instruction meterInstruction = new InstructionBuilder().setOrder(1).setInstruction((new MeterCaseBuilder()
+                    .setMeter(new MeterBuilder()
+                            .setMeterId(new MeterId(meterId))
+                            .build())
+                    .build()))
+                    .build();
+
+
+            instructionList.add(applyActionsInstruction);
+            instructionList.add(meterInstruction);
+
+        }
+
+
+        Instructions applyInstructions = new InstructionsBuilder()
+                .setInstruction(instructionList)
+                .build();
+
+
+        // Put our Instruction in a list of Instructions
+
+        LOG.info("adding flow");
+        Flow flow = flowBuilder
+                .setMatch(match)
+                .setBufferId(OFConstants.OFP_NO_BUFFER)
+                .setInstructions(applyInstructions)
+                .setPriority(1000)
+                .setHardTimeout(hardtimeout)]]></codefragment>
+   </duplication>
+   <duplication lines="71" tokens="205">
+      <file line="335"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="694"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                       flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortSecond);
+                                                   }
+
+
+                                                   for (int j = 0; j < flows.size(); j++) {
+
+
+                                                       Flow createdFlow = flows.get(j);
+
+
+                                                       // the first link should be ignored
+                                                       String nodeId = listOfLinks.get(j)
+                                                               .getSource().getSourceNode().getValue();
+
+                                                       //get the add input flow to add to sal
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                                                       LOG.info("Adding flows to salflow");
+
+                                                       // add flow to sal
+                                                       salFlowService.addFlow(flow);
+                                                       LOG.info("Flow successfully added");
+
+                                                   }
+
+                                               }
+
+
+                                               IdToListMap.put(finalId, listofFlowRequests);
+
+                                               populateEmbeddingId(finalId, listofFlowRequests);
+
+
+                                           } catch (Exception e) {
+                                               LOG.error("Exception Thrown by Resource Manager Disjoint Flows");
+                                               e.printStackTrace();
+
+                                           }
+
+
+                                           timer.schedule(new TimerTask() {
+                                               @Override
+                                               public void run() {
+                                                   removePath(finalId);
+                                               }
+                                           }, endDate);
+
+
+                                       }
+                                   }
+                            , startDate);
+
+                }
+            }).start();
+
+            return finalId;
+
+
+        } catch (Exception e) {
+            LOG.error("Exception Thrown by Resource Manager Disjoint Flows");
+            e.printStackTrace();
+            return -1L;
+        }
+
+
+    }
+
+    public static Long createDisjointFlows(org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.Match matchingStructure,]]></codefragment>
+   </duplication>
+   <duplication lines="54" tokens="203">
+      <file line="1035"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1199"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2545"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2858"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            listofactions.get(0).add(queueAction);
+
+            //ApplyActions
+        }
+
+        LOG.info("applying action");
+        ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(0)).build();
+
+        //Instruction
+        Instruction applyActionsInstruction = new InstructionBuilder() //
+                .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                        .setApplyActions(applyActions) //
+                        .build())
+
+                .build();
+
+        List<Instruction> instructionList = new ArrayList<>();
+
+        if (meterId == null) {
+
+            instructionList.add(applyActionsInstruction);
+
+
+        } else {
+
+            Instruction meterInstruction = new InstructionBuilder()
+                    .setOrder(1).setInstruction((new MeterCaseBuilder()
+                            .setMeter(new MeterBuilder()
+                                    .setMeterId(new MeterId(meterId))
+                                    .build())
+                            .build()))
+                    .build();
+
+
+            instructionList.add(applyActionsInstruction);
+            instructionList.add(meterInstruction);
+
+        }
+
+
+        Instructions applyInstructions = new InstructionsBuilder()
+                .setInstruction(instructionList)
+                .build();
+
+
+        // Put our Instruction in a list of Instructions
+
+        LOG.info("adding flow");
+        Flow flow = flowBuilder
+                .setMatch(match)
+                .setBufferId(OFConstants.OFP_NO_BUFFER)
+                .setInstructions(applyInstructions)
+                .setPriority(1000)
+                .setCookie(new FlowCookie(BigInteger.valueOf(flowCookieInc.getAndIncrement())))]]></codefragment>
+   </duplication>
+   <duplication lines="40" tokens="203">
+      <file line="1735"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1842"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            listofactions.get(i).add(queueAction);
+            listofactions.get(i).add(outputNodeConnectorAction);
+
+        }
+
+
+        //ApplyActions
+
+        List<Flow> flows = new ArrayList<>();
+        for (int i = 0; i < listofactions.size(); i++) {
+
+            ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(i)).build();
+
+            //Instruction
+            Instruction applyActionsInstruction = new InstructionBuilder() //
+                    .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                            .setApplyActions(applyActions) //
+                            .build())
+
+                    .build();
+
+            Instructions applyInstructions = new InstructionsBuilder()
+                    .setInstruction(ImmutableList.of(applyActionsInstruction))
+                    .build();
+
+
+            flows.add(flowBuilder
+                    .setMatch(matches.get(i))
+                    .setBufferId(OFConstants.OFP_NO_BUFFER)
+                    .setInstructions(applyInstructions)
+                    .setPriority(1000)
+                    .setHardTimeout(0)
+                    .setIdleTimeout(0)
+                    .setCookie(new FlowCookie(BigInteger.valueOf(flowCookieInc.getAndIncrement())))
+                    .setFlags(new FlowModFlags(false, false, false, false, false)).build());
+
+
+        }
+        return flows;
+    }]]></codefragment>
+   </duplication>
+   <duplication lines="36" tokens="194">
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/DataBrokerBuilder.java"/>
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/NotificationServiceBuilder.java"/>
+      <file line="164"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {
+            if (augmentationType == null) {
+                throw new IllegalArgumentException("Augmentation Type reference cannot be NULL!");
+            }
+            return (E) augmentation.get(augmentationType);
+        }
+
+        private int hash = 0;
+        private volatile boolean hashValid = false;
+        
+        @Override
+        public int hashCode() {
+            if (hashValid) {
+                return hash;
+            }
+        
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Objects.hashCode(_name);
+            result = prime * result + Objects.hashCode(_type);
+            result = prime * result + Objects.hashCode(augmentation);
+        
+            hash = result;
+            hashValid = true;
+            return result;
+        }
+
+        @Override
+        public boolean equals(java.lang.Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof DataObject)) {
+                return false;
+            }
+            if (!org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker.class.equals(((DataObject)obj).getImplementedInterface())) {]]></codefragment>
+   </duplication>
+   <duplication lines="22" tokens="191">
+      <file line="1900"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="3163"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[    private RemoveFlowInput getRemoveFlowInput(List<EmbeddingFlowRequest> allRequests, int i) {
+        Flow flowtoDelete = populateFlowRemoveStructure(new FlowCookie(allRequests.get(i).getFlowCookie()));
+
+        String edge_switch = allRequests.get(i).getNode_id();
+
+        //identify the flow
+        InstanceIdentifier<Flow> flowPath = InstanceIdentifier
+                .builder(Nodes.class)
+                .child(Node.class, new NodeKey(new NodeId(edge_switch)))
+                .augmentation(FlowCapableNode.class)
+                .child(Table.class, new TableKey(flowtoDelete.getTableId()))
+                .child(Flow.class, new FlowKey(flowtoDelete.getId())).build();
+
+
+        RemoveFlowInputBuilder b = new RemoveFlowInputBuilder(flowtoDelete);
+        InstanceIdentifier<Table> tableInstanceId = flowPath
+                .<Table>firstIdentifierOf(Table.class);
+        InstanceIdentifier<Node> nodeInstanceId = flowPath
+                .<Node>firstIdentifierOf(Node.class);
+        b.setNode(new NodeRef(nodeInstanceId));
+        b.setFlowTable(new FlowTableRef(tableInstanceId));
+        b.setTransactionUri(new Uri(flowtoDelete.getId().getValue()));]]></codefragment>
+   </duplication>
+   <duplication lines="30" tokens="177">
+      <file line="525"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1635"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[    private AddFlowInput getAddFlowInputToSend(String edge_switch, Flow createdFlow) {
+        InstanceIdentifier<Flow> flowPath = InstanceIdentifier
+                .builder(Nodes.class)
+                .child(Node.class, new NodeKey(new NodeId(edge_switch)))
+                .augmentation(FlowCapableNode.class)
+                .child(Table.class, new TableKey(createdFlow.getTableId()))
+                .child(Flow.class, new FlowKey(createdFlow.getId())).build();
+
+
+        final AddFlowInputBuilder builder = new AddFlowInputBuilder(createdFlow);
+        final InstanceIdentifier<Table> tableInstanceId = flowPath
+                .<Table>firstIdentifierOf(Table.class);
+        final InstanceIdentifier<Node> nodeInstanceId = flowPath
+                .<Node>firstIdentifierOf(Node.class);
+        builder.setNode(new NodeRef(nodeInstanceId));
+        builder.setFlowTable(new FlowTableRef(tableInstanceId));
+        builder.setTransactionUri(new Uri(createdFlow.getId().getValue()));
+        return builder.build();
+    }
+
+
+    /**
+     * Method to create flows
+     * @param physicalPathLinks - the links for which the flows should be created
+     * @param queue - the queue to be used, 0-7 allowed
+     * @param mplsLabel - mpls label to be used
+     * @param resillientMPLSLabel - resillient mpls label
+     * @return List<Flows> the created flows
+     */
+    private List<Flow> createFlows(List<LinkWithFailoverPort> physicalPathLinks, Long queue, Long mplsLabel, Long resillientMPLSLabel]]></codefragment>
+   </duplication>
+   <duplication lines="15" tokens="175">
+      <file line="1258"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1413"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[    }
+
+
+    public static Long createAndSendFlow(org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.Match endpointMatch,
+                                         List<org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Link> physicalPathLinks,
+                                         List<Long> queuesOnPath,
+                                         Long meterId,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId srcNode,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId destNode,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId srcNodePort,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId destNodePort,
+                                         Long bandwidth,
+                                         Long burst,
+                                         VlanId srcVlan,
+                                         VlanId destVlan]]></codefragment>
+   </duplication>
+   <duplication lines="16" tokens="175">
+      <file line="1883"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2065"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[    }
+
+
+    public static Long bestembededflow(
+            org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.Match endpointMatch,
+            List<org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Link> physicalPathLinks,
+            Integer idletimeout, Integer hardtimeout,
+            Long meter,
+            org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId srcNode,
+            org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId destNode,
+            org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId srcNodePort,
+            org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId destNodePort,
+            Long bandwidth,
+            Long burst,
+            VlanId srcVlan,
+            VlanId destVlan]]></codefragment>
+   </duplication>
+   <duplication lines="58" tokens="167">
+      <file line="193"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="560"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                           List<List<Long>> queues,
+                                           Long meterId,
+                                           NodeId srcNodeId, NodeId dstNodeId,
+                                           NodeConnectorId srcNodePort, NodeConnectorId dstNodePort,
+                                           Long bandwidth,
+                                           Long burst,
+                                           VlanId srcVlan,
+                                           VlanId destVlan,
+                                           Timestamp startTime,
+                                           Timestamp endTime
+    ) {
+
+
+        try {
+
+
+            // System.out.println(startTime.getValue());
+
+            ++id;
+
+            final Long finalId = id;
+
+            String formattedStartTime = startTime.getValue().substring(0, 19);
+            String formattedEndTime = endTime.getValue().substring(0, 19);
+
+
+
+
+            DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date startDate = dateFormatter.parse(formattedStartTime); //"2012-07-06 13:05:45"
+            Date endDate = dateFormatter.parse(formattedEndTime); //"2012-07-06 13:05:45"
+
+            //Now create the time and schedule it
+            Timer timer = new Timer();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    timer.schedule(new TimerTask() {
+                                       @Override
+                                       public void run() {
+
+                                           // final Long pathId = createDisjointFlows(matchingStructure, links, queues, meterId, srcNodeId, dstNodeId, srcNodePort, dstNodePort, burst, bandwidth, srcVlan, destVlan);
+
+                                           try {
+
+
+
+                                               //	System.out.println("createDisjointFlows called");
+
+
+                                               List<EmbeddingFlowRequest> listofFlowRequests = new ArrayList<>();
+
+
+                                               Flow first = null;
+                                               if (meterId == null) {
+
+                                                   first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, queues, srcVlan);]]></codefragment>
+   </duplication>
+   <duplication lines="33" tokens="162">
+      <file line="250"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="430"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="614"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="790"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                   first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, queues, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {
+
+
+
+                                                   VTNMeterUtils vtnMeterUtils = new VTNMeterUtils(new MeterId(meterId), bandwidth, burst);
+
+                                                   AddMeterInput addMeterInput = vtnMeterUtils.createAddMeterInput(srcNodeId);
+
+
+                                                   Future<RpcResult<AddMeterOutput>> future = salMeterService.addMeter(addMeterInput);
+
+
+
+                                                   if (future.get().isSuccessful()) {
+
+                                                       first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, meterId, links, queues, srcVlan);]]></codefragment>
+   </duplication>
+   <duplication lines="30" tokens="161">
+      <file line="805"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="853"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            } else if (!isFinalDomain && !isFinalDomain) {
+
+
+                //ip and other fields are passed here but ignored inside the method
+                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, true, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);]]></codefragment>
+   </duplication>
+   <duplication lines="29" tokens="160">
+      <file line="756"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="899"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            if (isFirstDomain && !isFinalDomain) {
+
+
+                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, false, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);]]></codefragment>
+   </duplication>
+   <duplication lines="20" tokens="142">
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/DataBrokerBuilder.java"/>
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/NotificationServiceBuilder.java"/>
+      <file line="145"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[                this.augmentation = Collections.<java.lang.Class<? extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>>, Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>>singletonMap(e.getKey(), e.getValue());
+                break;
+            default :
+                this.augmentation = new HashMap<>(base.augmentation);
+            }
+        }
+
+        @Override
+        public java.lang.Object getName() {
+            return _name;
+        }
+        
+        @Override
+        public java.lang.Class<? extends org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.controller.config.rev130405.ServiceType> getType() {
+            return _type;
+        }
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public <E extends Augmentation<org.opendaylight.yang.gen.v1.urn.eu.virtuwind.resourcemanager.impl.rev161017.modules.module.configuration.resourcemanager.impl.DataBroker>> E getAugmentation(java.lang.Class<E> augmentationType) {]]></codefragment>
+   </duplication>
+   <duplication lines="40" tokens="141">
+      <file line="514"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="869"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                    flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortSecond);
+                }
+
+
+                for (int j = 0; j < flows.size(); j++) {
+
+
+                    Flow createdFlow = flows.get(j);
+
+
+                    // the first link should be ignored
+                    String nodeId = listOfLinks.get(j)
+                            .getSource().getSourceNode().getValue();
+
+                    //get the add input flow to add to sal
+
+                    listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                    AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                    LOG.info("Adding flows to salflow");
+
+                    // add flow to sal
+                    salFlowService.addFlow(flow);
+                    LOG.info("Flow successfully added");
+
+                }
+
+            }
+
+
+            IdToListMap.put(id, listofFlowRequests);
+            populateEmbeddingId(id, listofFlowRequests);
+
+            return id;
+
+        } catch (Exception e) {
+            LOG.error("Exception Thrown by Resource Manager Disjoint Flows");
+            e.printStackTrace();
+            return null;]]></codefragment>
+   </duplication>
+   <duplication lines="26" tokens="132">
+      <file line="759"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="856"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, false, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);]]></codefragment>
+   </duplication>
+   <duplication lines="26" tokens="132">
+      <file line="809"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="901"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow sourceFlow = createSourceFlow(meterID, srcIP, destIP, destPort, protocol, mplsLabel, IngressEdgeSwitchPort, failoverPort, resilientPathMplsLabel, IngressEdgeSwitchID, true, ingressRouteVlanId);
+
+
+                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(IngressEdgeSwitchID, sourceFlow);
+
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(IngressEdgeSwitchID, sourceFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> future = salFlowService.addFlow(flowinputSrcNode);
+
+                if (future.isDone() && future.get().isSuccessful()) {
+                    LOG.info("Ingress flow successfully installed");
+
+                } else {
+
+                    if (future.get().getErrors().size() > 0) {
+                        LOG.error("Ingress Flow Installation unsuccessful and error is: \n" + future.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+                String last = EgressEdgeSwitchID;
+                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);]]></codefragment>
+   </duplication>
+   <duplication lines="31" tokens="131">
+      <file line="2475"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2626"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                .setInPort(temp);
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        Match match = matchBuilder
+                .build();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+        List<Action> actions = new ArrayList<Action>();
+
+        //Actions
+        //currently changing tos and sending to output connector
+
+
+        List<List<Action>> listofactions = new ArrayList<>();
+
+        for (int j = 0; j < 1; ++j) {
+            listofactions.add(new ArrayList<Action>());
+        }]]></codefragment>
+   </duplication>
+   <duplication lines="26" tokens="130">
+      <file line="491"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="664"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(i)).build();
+
+            //Instruction
+            Instruction applyActionsInstruction = new InstructionBuilder() //
+                    .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                            .setApplyActions(applyActions) //
+                            .build())
+
+                    .build();
+
+            Instructions applyInstructions = new InstructionsBuilder()
+                    .setInstruction(ImmutableList.of(applyActionsInstruction))
+                    .build();
+
+
+            flows.add(flowBuilder
+                    .setMatch(match)
+                    .setBufferId(OFConstants.OFP_NO_BUFFER)
+                    .setInstructions(applyInstructions)
+                    .setPriority(1000)
+                    .setCookie(new FlowCookie(BigInteger.valueOf(flowCookieInc.getAndIncrement())))
+                    .setFlags(new FlowModFlags(false, false, false, false, false)).build());
+
+        }
+        return flows;
+    }]]></codefragment>
+   </duplication>
+   <duplication lines="19" tokens="130">
+      <file line="1778"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1847"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            for (int i = 0; i < allRequests.size(); i++) {
+
+                RemoveFlowInput flow = getRemoveFlowInput(allRequests, i);
+
+                // remove flow from sal
+                Future<RpcResult<RemoveFlowOutput>> future = salFlowService.removeFlow(flow);
+
+                try {
+                    if (future.get().isSuccessful()) {
+                        LOG.info("Flow removal successful and flow was: " + flow.getCookie() + "   on node " + flow.getNode());
+                    } else {
+                        LOG.info("!!!!Flow removal Unsuccessful and flow was: " + flow.getCookie() + "   on node " + flow.getNode() + "\n and errors are:  " + future.get().getErrors().toString());
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }]]></codefragment>
+   </duplication>
+   <duplication lines="28" tokens="130">
+      <file line="2846"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="3040"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                    .build();
+
+            Action outputNodeConnectorActionsrc = actionBuilder
+                    .setOrder(1).setAction(new OutputActionCaseBuilder()
+                            .setOutputAction(new OutputActionBuilder()
+                                    .setOutputNodeConnector(new Uri(outputNodeConnector))
+                                    .build())
+                            .build())
+                    .build();
+
+
+            listofactions.get(0).add(queueAction);
+            listofactions.get(0).add(outputNodeConnectorActionsrc);
+        }
+
+        //ApplyActions
+
+
+        LOG.info("applying action");
+        ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(0)).build();
+
+        //Instruction
+        Instruction applyActionsInstruction = new InstructionBuilder() //
+                .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                        .setApplyActions(applyActions) //
+                        .build())
+
+                .build();]]></codefragment>
+   </duplication>
+   <duplication lines="27" tokens="129">
+      <file line="2658"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2971"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[        if (destVlan != null) {
+
+
+            PushVlanActionCaseBuilder pushVlanActionCaseBuilder = new PushVlanActionCaseBuilder();
+
+
+            Action pushVlanAction = actionBuilder.setOrder(0).setAction(
+                    pushVlanActionCaseBuilder.setPushVlanAction(new PushVlanActionBuilder().setEthernetType(0x8100)
+                            .build()).build()
+            ).build();
+
+            Action setVlanIdAction = actionBuilder
+                    .setOrder(1).setAction(new SetFieldCaseBuilder()
+                            .setSetField(new SetFieldBuilder()
+                                    .setVlanMatch(new VlanMatchBuilder()
+                                            .setVlanId(new VlanIdBuilder()
+                                                    .setVlanId(new VlanId(destVlan))
+                                                    .setVlanIdPresent(true)
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .build())
+                    .build();
+
+
+
+            Action outputNodeConnectorActionsrc = actionBuilder]]></codefragment>
+   </duplication>
+   <duplication lines="36" tokens="129">
+      <file line="2704"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="3050"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                    .build();
+
+
+            listofactions.get(0).add(outputNodeConnectorActionsrc);
+
+        }
+
+        //ApplyActions
+
+
+        LOG.info("applying action");
+        ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(0)).build();
+
+        //Instruction
+        Instruction applyActionsInstruction = new InstructionBuilder() //
+                .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                        .setApplyActions(applyActions) //
+                        .build())
+
+                .build();
+
+
+        Instructions applyInstructions = new InstructionsBuilder()
+                .setInstruction(ImmutableList.of(applyActionsInstruction))
+                .build();
+
+
+        // Put our Instruction in a list of Instructions
+
+        LOG.info("adding flow");
+        Flow flow = flowBuilder
+                .setMatch(match)
+                .setBufferId(OFConstants.OFP_NO_BUFFER)
+                .setInstructions(applyInstructions)
+                .setPriority(1000)
+                .setHardTimeout(hardtimeout)]]></codefragment>
+   </duplication>
+   <duplication lines="33" tokens="129">
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/DataBrokerBuilder.java"/>
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/NotificationServiceBuilder.java"/>
+      <file line="232"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/yang-gen-code/org/opendaylight/yang/gen/v1/urn/eu/virtuwind/resourcemanager/impl/rev161017/modules/module/configuration/resourcemanager/impl/RpcRegistryBuilder.java"/>
+      <codefragment><![CDATA[            java.lang.StringBuilder builder = new java.lang.StringBuilder ("DataBroker [");
+            boolean first = true;
+        
+            if (_name != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_name=");
+                builder.append(_name);
+             }
+            if (_type != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+                builder.append("_type=");
+                builder.append(_type);
+             }
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append("augmentation=");
+            builder.append(augmentation.values());
+            return builder.append(']').toString();
+        }
+    }
+
+}]]></codefragment>
+   </duplication>
+   <duplication lines="42" tokens="127">
+      <file line="196"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="563"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1423"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                           NodeConnectorId srcNodePort, NodeConnectorId dstNodePort,
+                                           Long bandwidth,
+                                           Long burst,
+                                           VlanId srcVlan,
+                                           VlanId destVlan,
+                                           Timestamp startTime,
+                                           Timestamp endTime
+    ) {
+
+
+        try {
+
+
+            // System.out.println(startTime.getValue());
+
+            ++id;
+
+            final Long finalId = id;
+
+            String formattedStartTime = startTime.getValue().substring(0, 19);
+            String formattedEndTime = endTime.getValue().substring(0, 19);
+
+
+
+
+            DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date startDate = dateFormatter.parse(formattedStartTime); //"2012-07-06 13:05:45"
+            Date endDate = dateFormatter.parse(formattedEndTime); //"2012-07-06 13:05:45"
+
+            //Now create the time and schedule it
+            Timer timer = new Timer();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    timer.schedule(new TimerTask() {
+                                       @Override
+                                       public void run() {
+
+                                           // final Long pathId = createDisjointFlows(matchingStructure, links, queues, meterId, srcNodeId, dstNodeId, srcNodePort, dstNodePort, burst, bandwidth, srcVlan, destVlan);
+
+                                           try {]]></codefragment>
+   </duplication>
+   <duplication lines="28" tokens="125">
+      <file line="480"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1842"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            listofactions.get(i).add(queueAction);
+            listofactions.get(i).add(outputNodeConnectorAction);
+
+        }
+
+
+        //ApplyActions
+
+        List<Flow> flows = new ArrayList<>();
+        for (int i = 0; i < listofactions.size(); i++) {
+
+            ApplyActions applyActions = new ApplyActionsBuilder().setAction(listofactions.get(i)).build();
+
+            //Instruction
+            Instruction applyActionsInstruction = new InstructionBuilder() //
+                    .setOrder(0).setInstruction(new ApplyActionsCaseBuilder()//
+                            .setApplyActions(applyActions) //
+                            .build())
+
+                    .build();
+
+            Instructions applyInstructions = new InstructionsBuilder()
+                    .setInstruction(ImmutableList.of(applyActionsInstruction))
+                    .build();
+
+
+            flows.add(flowBuilder
+                    .setMatch(match)]]></codefragment>
+   </duplication>
+   <duplication lines="22" tokens="123">
+      <file line="784"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="834"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="881"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);
+
+                AddFlowInput flowinputDestNode = getAddFlowInputToSend(last, destinationFlow);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(last, destinationFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> futureEgreeFlow = salFlowService.addFlow(flowinputDestNode);
+
+                if (futureEgreeFlow.isDone() && futureEgreeFlow.get().isSuccessful()) {
+                    LOG.info("Flow installation Successful: Eggress flow: " + last);
+                } else {
+
+                    if (futureEgreeFlow.get().getErrors().size() > 0) {
+                        LOG.error("Flow Installation unsuccessful: Egress error is: " + futureEgreeFlow.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+            } else if (!isFinalDomain && !isFinalDomain) {]]></codefragment>
+   </duplication>
+   <duplication lines="27" tokens="123">
+      <file line="1798"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1866"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            if (removeGroupInput != null) {
+                Future<RpcResult<RemoveGroupOutput>> future = salGroupService.removeGroup(removeGroupInput);
+
+                try {
+                    if (future.get().isSuccessful()) {
+                        LOG.info("Removing group successful and Group was: " + removeGroupInput.getGroupId() + " on switch :" + removeGroupInput.getNode().getValue());
+                    } else {
+                        LOG.info("!!!Removing group Unsuccessful and Group was: " + removeGroupInput.getGroupId() + " on switch :" + removeGroupInput.getNode().getValue() + "\n and errors are " + future.get().getErrors().toString());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+        } else {
+
+            //no path found hence nothing to delete
+
+            return false;
+        }
+
+        // all flows successfully removed
+        return true;
+
+    }]]></codefragment>
+   </duplication>
+   <duplication lines="22" tokens="121">
+      <file line="784"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="834"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="926"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[                Flow destinationFlow = createEgressFlow(mplsLabel, EgressEdgeSwitchPort, true, egressRouteVlanId, null);
+
+                AddFlowInput flowinputDestNode = getAddFlowInputToSend(last, destinationFlow);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(last, destinationFlow.getCookie().getValue()));
+
+
+                Future<RpcResult<AddFlowOutput>> futureEgreeFlow = salFlowService.addFlow(flowinputDestNode);
+
+                if (futureEgreeFlow.isDone() && futureEgreeFlow.get().isSuccessful()) {
+                    LOG.info("Flow installation Successful: Eggress flow: " + last);
+                } else {
+
+                    if (futureEgreeFlow.get().getErrors().size() > 0) {
+                        LOG.error("Flow Installation unsuccessful: Egress error is: " + futureEgreeFlow.get().getErrors().toString());
+                        return -1L;
+                    }
+
+                }
+
+
+            } else if (!isFinalDomain && !isFinalDomain) {]]></codefragment>
+   </duplication>
+   <duplication lines="21" tokens="119">
+      <file line="1451"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1608"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[            Bucket bucketFailover = new BucketBuilder()
+                    .setBucketId(new BucketId(2L))
+                    .setKey(new BucketKey(new BucketId(2L)))
+                    .setWatchPort(failoverPort.longValue())
+                    .setAction(failoverActionsList)
+                    .setWatchGroup(DEFAULT_WATCH_GROUP)
+                    .build();
+
+            bucketList.add(bucketFailover);
+
+        }
+        Buckets buckets = new BucketsBuilder().setBucket(bucketList).build();
+
+
+        return new AddGroupInputBuilder()
+                .setGroupName("FF")
+                .setBarrier(false)
+                .setGroupId(new GroupId(groupId))
+                .setGroupType(GroupTypes.GroupFf)
+                .setBuckets(buckets)
+                .setNode(getNodeRef(new NodeId(switchId)))]]></codefragment>
+   </duplication>
+   <duplication lines="20" tokens="113">
+      <file line="1419"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2072"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                         Long meterId,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId srcNode,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId destNode,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId srcNodePort,
+                                         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId destNodePort,
+                                         Long bandwidth,
+                                         Long burst,
+                                         VlanId srcVlan,
+                                         VlanId destVlan,
+                                         Timestamp startTime,
+                                         Timestamp endTime
+    ) {
+
+        try {
+
+            // System.out.println(startTime.getValue());
+
+            ++id;
+
+            final Long finalId = id;]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="111">
+      <file line="250"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="282"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="430"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="461"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                   first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, queues, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {]]></codefragment>
+   </duplication>
+   <duplication lines="32" tokens="110">
+      <file line="335"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="869"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                       flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortSecond);
+                                                   }
+
+
+                                                   for (int j = 0; j < flows.size(); j++) {
+
+
+                                                       Flow createdFlow = flows.get(j);
+
+
+                                                       // the first link should be ignored
+                                                       String nodeId = listOfLinks.get(j)
+                                                               .getSource().getSourceNode().getValue();
+
+                                                       //get the add input flow to add to sal
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                                                       LOG.info("Adding flows to salflow");
+
+                                                       // add flow to sal
+                                                       salFlowService.addFlow(flow);
+                                                       LOG.info("Flow successfully added");
+
+                                                   }
+
+                                               }
+
+
+                                               IdToListMap.put(finalId, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="32" tokens="110">
+      <file line="514"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="694"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                    flows = createFlows(matchingStructure, listOfLinks, queuesForLinkList, inPortSecond);
+                }
+
+
+                for (int j = 0; j < flows.size(); j++) {
+
+
+                    Flow createdFlow = flows.get(j);
+
+
+                    // the first link should be ignored
+                    String nodeId = listOfLinks.get(j)
+                            .getSource().getSourceNode().getValue();
+
+                    //get the add input flow to add to sal
+
+                    listofFlowRequests.add(new EmbeddingFlowRequest(nodeId, createdFlow.getCookie().getValue(), meterId, burst, bandwidth));
+
+                    AddFlowInput flow = getAddFlowInputToSend(nodeId, createdFlow);
+
+                    LOG.info("Adding flows to salflow");
+
+                    // add flow to sal
+                    salFlowService.addFlow(flow);
+                    LOG.info("Flow successfully added");
+
+                }
+
+            }
+
+
+            IdToListMap.put(id, listofFlowRequests);]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="109">
+      <file line="431"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="563"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[        FlowBuilder flowBuilder = new FlowBuilder()
+                .setTableId((short) 0)
+                .setFlowName("random");
+
+        //Flow ID
+        flowBuilder.setId(new FlowId(Long.toString(flowBuilder.hashCode())));
+
+        // TcpMatchBuilder tcpMatchBuilder = new TcpMatchBuilder().setTcpSourcePort(new PortNumber(sourcePort)).setTcpDestinationPort(new PortNumber(destPort));
+        //IpMatchBuilder ipMatchBuilder = new IpMatchBuilder().setIpProtocol(protocol);
+
+        Match match = new MatchBuilder()
+                .setEthernetMatch(new EthernetMatchBuilder().setEthernetType(new EthernetTypeBuilder().setType(new EtherType(0x8847L)).build()).build())
+                .setProtocolMatchFields(new ProtocolMatchFieldsBuilder().setMplsLabel(mplsLabel).build())
+                .build();
+
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+        List<Action> actions = new ArrayList<Action>();]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="109">
+      <file line="1405"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <file line="1550"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/Interdomain.java"/>
+      <codefragment><![CDATA[        Bucket bucket = new BucketBuilder()
+                .setBucketId(new BucketId(1L))
+                .setWatchPort(Long.parseLong(outputNodeConnector))
+                .setKey(new BucketKey(new BucketId(1L)))
+                .setAction(listofactions)
+                .setWatchGroup(DEFAULT_WATCH_GROUP)
+                .build();
+
+        List<Bucket> bucketList = new ArrayList<>();
+
+        bucketList.add(bucket);
+
+        if ((!failoverMpls.equals(-1L)) && failoverPort != null) {
+
+            List<Action> failoverActionsList = new ArrayList<>();
+            ActionBuilder failoverActions = new ActionBuilder();
+
+            Action popMPLS = failoverActions.setOrder(0).setAction(new PopMplsActionCaseBuilder()]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="109">
+      <file line="614"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="644"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="790"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="819"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                   first = createBestEffortSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {]]></codefragment>
+   </duplication>
+   <duplication lines="17" tokens="108">
+      <file line="1939"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1982"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2146"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2188"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                AddFlowInput flowinputSrcNode = getAddFlowInputToSend(srcNode.getValue(), sourceFlowWithMeter);
+
+                listofFlowRequests.add(new EmbeddingFlowRequest(srcNode.getValue(), sourceFlowWithMeter.getCookie().getValue(), meter, burst, bandwidth));
+
+                Future<RpcResult<AddFlowOutput>> resultFuture = salFlowService.addFlow(flowinputSrcNode);
+
+                if (resultFuture.get().isSuccessful()) {
+                    LOG.info("Source Flow added successfully and cookie is: " + sourceFlowWithMeter.getCookie());
+
+                } else {
+
+                    LOG.error("Source Flow was not installed and error is " + resultFuture.get().getErrors().toString());
+
+                }
+
+
+            } else {]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="107">
+      <file line="250"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="430"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="644"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="819"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                   first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, null, links, queues, srcVlan);
+
+                                                   listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                   AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                   Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                   if (flowResult.get().isSuccessful()) {
+                                                       LOG.info("Flow successfully added");
+
+                                                   } else {
+
+                                                       LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                   }
+
+
+                                               } else {]]></codefragment>
+   </duplication>
+   <duplication lines="17" tokens="107">
+      <file line="282"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="461"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="614"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="790"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                                                       first = createSourceFlowWithQueuesWithMeterForDisjoint(srcNodePort, matchingStructure, meterId, links, queues, srcVlan);
+
+                                                       listofFlowRequests.add(new EmbeddingFlowRequest(srcNodeId.getValue(), first.getCookie().getValue(), meterId, burst, bandwidth));
+
+                                                       AddFlowInput srcFlow = getAddFlowInputToSend(srcNodeId.getValue(), first);
+                                                       Future<RpcResult<AddFlowOutput>> flowResult = salFlowService.addFlow(srcFlow);
+
+
+                                                       if (flowResult.get().isSuccessful()) {
+                                                           LOG.info("Flow successfully added");
+
+                                                       } else {
+
+                                                           LOG.error("Flow was not added and error is: " + flowResult.get().getErrors().toString());
+                                                       }
+
+                                                   } else {]]></codefragment>
+   </duplication>
+   <duplication lines="22" tokens="106">
+      <file line="1664"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1784"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2933"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[        flowBuilder.setId(new FlowId(Long.toString(flowBuilder.hashCode())));
+
+        // TcpMatchBuilder tcpMatchBuilder = new TcpMatchBuilder().setTcpSourcePort(new PortNumber(sourcePort)).setTcpDestinationPort(new PortNumber(destPort));
+        //IpMatchBuilder ipMatchBuilder = new IpMatchBuilder().setIpProtocol(protocol);
+
+        MatchBuilder matchBuilder = new MatchBuilder();
+
+        matchBuilder.setEthernetMatch(match1.getEthernetMatch())
+                .setLayer3Match(match1.getLayer3Match());
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }]]></codefragment>
+   </duplication>
+   <duplication lines="31" tokens="105">
+      <file line="931"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1114"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2771"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                .setInPort(srcNodeConnectorId);
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        Match match = matchBuilder
+                .build();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+
+        //Actions
+        //currently changing tos and sending to output connector
+
+
+        List<List<Action>> listofactions = new ArrayList<>();
+
+        listofactions.add(new ArrayList<Action>());
+
+
+        String firstElemOfFirstList = links.get(0).get(0).getSource().getSourceTp().getValue().split(":")[2];]]></codefragment>
+   </duplication>
+   <duplication lines="28" tokens="104">
+      <file line="931"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1114"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2771"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2938"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[                .setInPort(srcNodeConnectorId);
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        Match match = matchBuilder
+                .build();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+
+        //Actions
+        //currently changing tos and sending to output connector
+
+
+        List<List<Action>> listofactions = new ArrayList<>();
+
+        listofactions.add(new ArrayList<Action>());]]></codefragment>
+   </duplication>
+   <duplication lines="25" tokens="103">
+      <file line="2471"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="2767"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[        LOG.info("setting the in port for the source flow to: " + temp.getValue());
+
+        matchBuilder.setEthernetMatch(match1.getEthernetMatch())
+                .setLayer3Match(match1.getLayer3Match())
+                .setInPort(temp);
+
+
+        if (match1.getIpMatch() != null && match1.getLayer4Match() != null) {
+
+            //ip and layer 4 are not null
+            matchBuilder.setIpMatch(match1.getIpMatch())
+                    .setLayer4Match(match1.getLayer4Match());
+
+
+        }
+        if (match1.getVlanMatch() != null) {
+            matchBuilder.setVlanMatch(match1.getVlanMatch());
+        }
+
+
+        Match match = matchBuilder
+                .build();
+
+        ActionBuilder actionBuilder = new ActionBuilder();
+        List<Action> actions = new ArrayList<Action>();]]></codefragment>
+   </duplication>
+   <duplication lines="18" tokens="101">
+      <file line="1156"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <file line="1181"
+            path="/Users/Ali/SDN_5G_Opendaylight/Virtuwind-Official/integration-distribution/virtuwind-sdn/resource-manager/implementation/src/main/java/eu/virtuwind/resourcemanager/impl/PathConfigurator.java"/>
+      <codefragment><![CDATA[            Action outputNodeConnectorActionsrcFirstList = actionBuilder
+                    .setOrder(1).setAction(new OutputActionCaseBuilder()
+                            .setOutputAction(new OutputActionBuilder()
+                                    .setOutputNodeConnector(new Uri(firstElemOfFirstList))
+                                    .build())
+                            .build())
+                    .build();
+
+            Action outputNodeConnectorActionsrcSecondList = actionBuilder
+                    .setOrder(2).setAction(new OutputActionCaseBuilder()
+                            .setOutputAction(new OutputActionBuilder()
+                                    .setOutputNodeConnector(new Uri(firstElemOfSecondList))
+                                    .build())
+                            .build())
+                    .build();
+
+
+            listofactions.get(0).add(vlanAction);]]></codefragment>
+   </duplication>
+</pmd-cpd>

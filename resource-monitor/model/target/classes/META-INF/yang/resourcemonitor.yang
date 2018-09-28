@@ -1,0 +1,112 @@
+module resourcemonitor {
+    yang-version 1;
+    namespace "urn:eu:virtuwind:resourcemonitor";
+    prefix resourcemonitor;
+
+    import network-topology {
+        prefix topo;
+        revision-date 2013-10-21;
+    }
+
+    description "Resource Manager configuration";
+
+    revision "2016-10-17" {
+        description "Initial version of resourcemonitor interfaces";
+    }
+
+    rpc get-stats {
+
+         output {
+             leaf stats {
+                 type string;
+             }
+         }
+    }
+
+    rpc get-number-of-packets {
+        input {
+            leaf node-connector-id {
+                type string;
+            }
+        }
+        output {
+            leaf transmitted {
+                type decimal64 {
+                    fraction-digits 3;
+                }
+            }
+            leaf received {
+                type decimal64 {
+                    fraction-digits 3;
+                }
+            }
+        }
+    }
+
+/*
+The following structure has been added because even if it is not currently supported,
+a set of qos (even if not these exact ones) should be considered, not only linkspeed.
+Bandwidth is actually the qos corresponding to link speed. For now the rest could be
+left empty, until they are implemented.
+*/
+
+    grouping link-qos {
+        leaf bandwidth {
+            type decimal64 {
+                fraction-digits 3;
+            }
+        }
+        leaf packetLoss {
+            type decimal64 {
+                fraction-digits 3;
+            }
+        }
+        leaf packetDelay {
+            type decimal64 {
+                fraction-digits 3;
+            }
+        }
+        leaf jitter {
+            type decimal64 {
+                fraction-digits 3;
+            }
+        }
+        leaf num-queues {
+            type int32;
+        }
+        leaf queue-sizes {
+            description "Size of all the queues (in bytes)";
+            type int64;
+        }
+    }
+
+    notification linkChanged {
+        description "A Link was changed";
+        leaf topology-update {
+            type enumeration {
+                  enum "linkRemoved" {
+                            value 0;
+                            description "The link was removed.";
+                   }
+                   enum "linkAdded" {
+                      value 1;
+                      description "The link was added.";
+                   }
+                   enum "linkUpdated" {
+                        value 2;
+                        description "The link was updated";
+                   }
+
+            }
+        }
+
+        container link {
+            uses topo:link-attributes;
+        }
+
+        container qos {
+            uses link-qos;
+        }
+
+    }
+}

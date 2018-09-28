@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>resourcemonitor</title>
+  </head>
+  <body>
+    <h1>resourcemonitor</h1>
+    
+    <h2>Base Information</h2>
+    <table>
+        <tr>
+            <td><strong>prefix</strong></td>
+            <td>resourcemonitor</td>
+        </tr>
+        <tr>
+            <td><strong>namespace</strong></td>
+            <td>urn:eu:virtuwind:resourcemonitor</td>
+        </tr>
+        <tr>
+            <td><strong>revision</strong></td>
+            <td>2016-10-17</td>
+        </tr>
+        <tr>
+            <td><strong>description</strong></td>
+            <td>Resource Manager configuration</td>
+        </tr>
+        <tr>
+            <td><strong>yang-version</strong></td>
+            <td>1</td>
+        </tr>
+        <tr>
+    <td><strong>imports</strong></td><td>        topo:network-topology 2013-10-21;
+    </td>    </tr>
+    </table>
+    
+    <h3>Groupings Summary</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>
+            <a href="#link-qos"><strong>link-qos</strong></a>
+            </td>
+            <td>
+            </td>
+        </tr>
+    </table>
+    <h3>Notifications Summary</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>
+            <a href="#linkChanged"><strong>linkChanged</strong></a>
+            </td>
+            <td>
+            A Link was changed
+            </td>
+        </tr>
+    </table>
+    <h3>RPCs Summary</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>
+            <a href="#get-stats"><strong>get-stats</strong></a>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <a href="#get-number-of-packets"><strong>get-number-of-packets</strong></a>
+            </td>
+            <td>
+            </td>
+        </tr>
+    </table>
+    
+    
+    
+    <h2>Groupings</h2>
+    <ul>
+    <li>
+        <h3 id="link-qos">link-qos</h3>
+        <ul>
+            <ul>
+            <strong><li>
+                leaf: bandwidth
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#link-qos/bandwidth/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: packetLoss
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#link-qos/packetLoss/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: packetDelay
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#link-qos/packetDelay/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: jitter
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#link-qos/jitter/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: num-queues
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: (urn:ietf:params:xml:ns:yang:1)int32
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: queue-sizes
+            </li>
+            </strong>
+            <ul>
+            <li>
+                description: Size of all the queues (in bytes)
+            </li>
+            <li>
+                type: (urn:ietf:params:xml:ns:yang:1)int64
+            </li>
+            </ul>
+            </ul>
+        </ul>
+    </li>
+    </ul>
+    
+    
+    
+    <h2>Notifications</h2>
+    
+    <h3 id="linkChanged">linkChanged
+    </h3>
+        A Link was changed
+        <ul>
+        <strong><li>
+            leaf: topology-update
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: <a href="#linkChanged/topology-update/enumeration">enumeration</a>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong>
+        <li id="linkChanged/link">
+            container: link
+        </li>
+        </strong>
+        <ul>
+        </ul>
+        <ul>
+        <strong><li>
+            uses: (urn:TBD:params:xml:ns:yang:network-topology)link-attributes
+        </li>
+        </strong>
+        <ul>
+        <li>refines:
+            <ul>
+            </ul>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        <ul>
+        <strong><li>
+            leaf: link-id
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: The identifier of a link in the topology.
+                            A link is specific to a topology to which it belongs.
+        </li>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)link-id
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong>
+        <li id="linkChanged/link/source">
+            container: source
+        </li>
+        </strong>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        <ul>
+        <strong><li>
+            leaf: source-node
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: Source node identifier, must be in same topology.
+        </li>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)node-ref
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: source-tp
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: Termination point within source node that terminates the link.
+        </li>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)tp-ref
+        </li>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+        <ul>
+        <strong>
+        <li id="linkChanged/link/destination">
+            container: destination
+        </li>
+        </strong>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        <ul>
+        <strong><li>
+            leaf: dest-node
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: Destination node identifier, must be in same topology.
+        </li>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)node-ref
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: dest-tp
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: Termination point within destination node that terminates the link.
+        </li>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)tp-ref
+        </li>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+        <ul>
+        <strong>
+        <li id="linkChanged/link/supporting-link">
+            list: supporting-link
+        </li>
+        </strong>
+        <ul>
+        <li>
+            key definition: link-ref
+        </li>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        <ul>
+        <strong><li>
+            leaf: link-ref
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: (urn:TBD:params:xml:ns:yang:network-topology)link-ref
+        </li>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+        <ul>
+        <strong>
+        <li id="linkChanged/qos">
+            container: qos
+        </li>
+        </strong>
+        <ul>
+        </ul>
+        <ul>
+        <strong><li>
+            uses: <a href="#link-qos">link-qos</a>
+        </li>
+        </strong>
+        <ul>
+        <li>refines:
+            <ul>
+            </ul>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+        <ul>
+        <strong><li>
+            leaf: bandwidth
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: <a href="#link-qos/bandwidth/decimal64">decimal64</a>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: packetLoss
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: <a href="#link-qos/packetLoss/decimal64">decimal64</a>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: packetDelay
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: <a href="#link-qos/packetDelay/decimal64">decimal64</a>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: jitter
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: <a href="#link-qos/jitter/decimal64">decimal64</a>
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: num-queues
+        </li>
+        </strong>
+        <ul>
+        <li>
+            type: (urn:ietf:params:xml:ns:yang:1)int32
+        </li>
+        </ul>
+        </ul>
+        <ul>
+        <strong><li>
+            leaf: queue-sizes
+        </li>
+        </strong>
+        <ul>
+        <li>
+            description: Size of all the queues (in bytes)
+        </li>
+        <li>
+            type: (urn:ietf:params:xml:ns:yang:1)int64
+        </li>
+        </ul>
+        </ul>
+        </ul>
+        </ul>
+    
+    
+    <h2>RPC Definitions</h2>
+    <h3 id="get-stats">get-stats
+    </h3>
+        <ul>
+            <ul>
+            </ul>
+            <ul>
+            <strong>
+            <li id="get-stats/output">
+                container: output
+            </li>
+            </strong>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            <ul>
+            <strong><li>
+                leaf: stats
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: (urn:ietf:params:xml:ns:yang:1)string
+            </li>
+            </ul>
+            </ul>
+            </ul>
+            </ul>
+        </ul>
+    <h3 id="get-number-of-packets">get-number-of-packets
+    </h3>
+        <ul>
+            <ul>
+            <strong>
+            <li id="get-number-of-packets/input">
+                container: input
+            </li>
+            </strong>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            <ul>
+            <strong><li>
+                leaf: node-connector-id
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: (urn:ietf:params:xml:ns:yang:1)string
+            </li>
+            </ul>
+            </ul>
+            </ul>
+            </ul>
+            <ul>
+            <strong>
+            <li id="get-number-of-packets/output">
+                container: output
+            </li>
+            </strong>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            <ul>
+            <strong><li>
+                leaf: transmitted
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#get-number-of-packets/output/transmitted/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            <ul>
+            <strong><li>
+                leaf: received
+            </li>
+            </strong>
+            <ul>
+            <li>
+                type: <a href="#get-number-of-packets/output/received/decimal64">decimal64</a>
+            </li>
+            </ul>
+            </ul>
+            </ul>
+            </ul>
+        </ul>
+    </ul>
+    
+    
+    
+  </body>
+</html>
